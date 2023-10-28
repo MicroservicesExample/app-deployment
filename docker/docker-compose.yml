@@ -1,0 +1,27 @@
+version: "3.8"
+services:
+  
+  invoice-service:
+    depends_on:
+      - postgres-db
+    image: "invoice-service"
+    container_name: "invoice-service"
+    ports:
+      - 8080:8080
+      - 5001:5001
+    environment:
+      - BPL_JVM_THREAD_COUNT=50
+      - BPL_DEBUG_ENABLED=true
+      - BPL_DEBUG_PORT=5001
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-db:5432/invoiceService
+      - SPRING_PROFILES_ACTIVE=proddata
+  
+  postgres-db:
+    image: "postgres:14.4"
+    container_name: "postgres-db"
+    ports:
+      - 5432:5432
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=invoiceService
