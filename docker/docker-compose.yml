@@ -21,7 +21,7 @@ services:
       - BPL_JVM_THREAD_COUNT=50
       - BPL_DEBUG_ENABLED=true
       - BPL_DEBUG_PORT=5001
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-db:5432/invoiceService
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-db:5432/invoiceservice
       - SPRING_CLOUD_CONFIG_URI=http://config-service:9001
       - SPRING_PROFILES_ACTIVE=proddata
   
@@ -32,13 +32,16 @@ services:
     image: "payment-service:1.0"
     container_name: "payment-service"
     ports:
-      8081:8081
+      - 8081:8081
+      - 5002:5002
     environment:
       - BPL_JVM_THREAD_COUNT=50
+      - BPL_DEBUG_ENABLED=true
+      - BPL_DEBUG_PORT=5002
       - SPRING_DATASOURCE_URL=r2dbc:postgresql://postgres-db:5432/paymentService
       - SPRING_CLOUD_CONFIG_URI=http://config-service:9001
-  
-  
+      - CONFIG_INVOICE-SERVICE-URI=http://invoice-service:8080
+ 
   postgres-db:
     image: "postgres:14.4"
     container_name: "postgres-db"
