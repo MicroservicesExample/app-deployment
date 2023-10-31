@@ -21,8 +21,7 @@ spec:
               value: postgres
             - name: POSTGRES_PASSWORD
               value: postgres 
-            - name: POSTGRES_DB
-              value: invoiceService
+ 
           resources:
             requests:
               cpu: 100m

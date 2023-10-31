@@ -4,7 +4,7 @@ services:
   invoice-service:
     depends_on:
       - postgres-db
-    image: "invoice-service"
+    image: "invoice-service:1.0"
     container_name: "invoice-service"
     ports:
       - 8080:8080
@@ -16,6 +16,19 @@ services:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-db:5432/invoiceService
       - SPRING_PROFILES_ACTIVE=proddata
   
+  payment-service:
+    depends_on:
+      - invoice-service
+      - postgres-db
+    image: "payment-service:1.0"
+    container_name: "payment-service"
+    ports:
+      8081:8081
+    environment:
+      - BPL_JVM_THREAD_COUNT=50
+      - SPRING_DATASOURCE_URL=r2dbc:postgresql://postgres-db:5432/paymentService
+  
+  
   postgres-db:
     image: "postgres:14.4"
     container_name: "postgres-db"
@@ -24,4 +37,5 @@ services:
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
-      - POSTGRES_DB=invoiceService
+    volumes:
+      - ./postgresql/init.sql:/docker-entrypoint-initdb.d/init.sql
