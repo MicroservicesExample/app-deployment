@@ -1,6 +1,14 @@
 version: "3.8"
 services:
   
+  config-service:
+    image: "config-service:1.0"
+    container_name: "config-service"
+    ports:
+      - 9001:9001
+    environment:
+      - BPL_JVM_THREAD_COUNT=50  
+  
   invoice-service:
     depends_on:
       - postgres-db
