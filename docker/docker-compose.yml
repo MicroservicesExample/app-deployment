@@ -9,6 +9,26 @@ services:
     environment:
       - BPL_JVM_THREAD_COUNT=50  
   
+  redis:
+    image: "redis:7.0"
+    container_name: "redis"
+    ports:
+      - 6379:6379
+  
+  apigateway-service:
+    depends_on:
+      - redis
+    image: "apigateway-service"
+    container_name: "apigateway-service"
+    ports:
+      - 8000:8000
+    environment:
+      - BPL_JVM_THREAD_COUNT=50
+      - SPRING_REDIS_HOST=redis
+      - SPRING_REDIS_PORT=6379
+      - SPRING_CLOUD_CONFIG_URI=http://config-service:9001
+      - SPRING_PROFILES_ACTIVE=containerenv
+         
   invoice-service:
     depends_on:
       - postgres-db
@@ -41,6 +61,7 @@ services:
       - SPRING_DATASOURCE_URL=r2dbc:postgresql://postgres-db:5432/paymentService
       - SPRING_CLOUD_CONFIG_URI=http://config-service:9001
       - CONFIG_INVOICE-SERVICE-URI=http://invoice-service:8080
+      - SPRING_PROFILES_ACTIVE=proddata
  
   postgres-db:
     image: "postgres:14.4"
