@@ -18,7 +18,7 @@ services:
   apigateway-service:
     depends_on:
       - redis
-    image: "apigateway-service"
+    image: "apigateway-service:1.0"
     container_name: "apigateway-service"
     ports:
       - 8000:8000
