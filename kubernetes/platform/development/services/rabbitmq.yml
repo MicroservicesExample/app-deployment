@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-rabbitmq
+  labels:
+    messaging: my-rabbitmq
+spec:
+  selector:
+    matchLabels:
+      messaging: my-rabbitmq
+  template:
+    metadata:
+      labels:
+        messaging: my-rabbitmq
+    spec:
+      containers:
+        - name: my-rabbitmq
+          image: rabbitmq:3.10-management
+         
+          resources:
+            requests:
+              cpu: 100m
+              memory: 50Mi
+            limits:
+              cpu: 200m
+              memory: 100Mi
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: my-rabbitmq
+  labels:
+    messaging: my-rabbitmq
+spec:
+  type: ClusterIP
+  selector:
+    db: my-rabbitmq
+  ports:
+  - protocol: TCP
+    port: 5672
+    targetPort: 5672

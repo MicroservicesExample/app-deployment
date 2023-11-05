@@ -14,6 +14,14 @@ services:
     container_name: "redis"
     ports:
       - 6379:6379
+  rabbitmq:
+    image: rabbitmq:3.10-management
+    container_name: rabbitmq
+    ports:
+      - 5672:5672
+      - 15672:15672
+    volumes:
+      - ./rabbitmq/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf
   
   apigateway-service:
     depends_on:
@@ -49,6 +57,7 @@ services:
     depends_on:
       - invoice-service
       - postgres-db
+      - rabbitmq
     image: "payment-service:1.0"
     container_name: "payment-service"
     ports:
@@ -61,7 +70,19 @@ services:
       - SPRING_DATASOURCE_URL=r2dbc:postgresql://postgres-db:5432/paymentService
       - SPRING_CLOUD_CONFIG_URI=http://config-service:9001
       - CONFIG_INVOICE-SERVICE-URI=http://invoice-service:8080
+      - RABBITMQ_HOST=rabbitmq
       - SPRING_PROFILES_ACTIVE=proddata
+  notification-service:
+    depends_on:
+      - rabbitmq
+    image: "notification-service:1.0"
+    container_name: "notification-service"
+    ports:
+      - 9000:9000
+    environment:
+      - BPL_JVM_THREAD_COUNT=50
+      - SPRING_CLOUD_CONFIG_URI=http://config-service:9001
+      - RABBITMQ_HOST=rabbitmq
  
   postgres-db:
     image: "postgres:14.4"
