@@ -1,6 +1,14 @@
 version: "3.8"
 services:
   
+  auth-service:
+    image: "auth-service:1.0"
+    container_name: "auth-service"
+    ports:
+      - 9000:9000
+    environment:
+      - BPL_JVM_THREAD_COUNT=50
+  
   config-service:
     image: "config-service:1.0"
     container_name: "config-service"
@@ -23,13 +31,13 @@ services:
     volumes:
       - ./rabbitmq/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf
   
-  apigateway-service:
+  app-service:
     depends_on:
       - redis
-    image: "apigateway-service:1.0"
-    container_name: "apigateway-service"
+    image: "app-service:1.0"
+    container_name: "app-service"
     ports:
-      - 8000:8000
+      - 8080:8080
     environment:
       - BPL_JVM_THREAD_COUNT=50
       - SPRING_REDIS_HOST=redis
@@ -43,7 +51,7 @@ services:
     image: "invoice-service:1.0"
     container_name: "invoice-service"
     ports:
-      - 8080:8080
+      - 8081:8081
       - 5001:5001
     environment:
       - BPL_JVM_THREAD_COUNT=50
@@ -61,7 +69,7 @@ services:
     image: "payment-service:1.0"
     container_name: "payment-service"
     ports:
-      - 8081:8081
+      - 8082:8082
       - 5002:5002
     environment:
       - BPL_JVM_THREAD_COUNT=50
@@ -69,7 +77,7 @@ services:
       - BPL_DEBUG_PORT=5002
       - SPRING_DATASOURCE_URL=r2dbc:postgresql://postgres-db:5432/paymentService
       - SPRING_CLOUD_CONFIG_URI=http://config-service:9001
-      - CONFIG_INVOICE-SERVICE-URI=http://invoice-service:8080
+      - CONFIG_INVOICE-SERVICE-URI=http://invoice-service:8081
       - RABBITMQ_HOST=rabbitmq
       - SPRING_PROFILES_ACTIVE=proddata
   notification-service:
