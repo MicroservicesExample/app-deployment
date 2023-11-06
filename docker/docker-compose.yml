@@ -43,8 +43,9 @@ services:
       - SPRING_REDIS_HOST=redis
       - SPRING_REDIS_PORT=6379
       - SPRING_CLOUD_CONFIG_URI=http://config-service:9001
+      - SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_MYAUTH_ISSUER-URI=http://auth-service:9000
       - SPRING_PROFILES_ACTIVE=containerenv
-         
+          
   invoice-service:
     depends_on:
       - postgres-db
