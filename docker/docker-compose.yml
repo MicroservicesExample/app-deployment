@@ -8,6 +8,7 @@ services:
       - 9000:9000
     environment:
       - BPL_JVM_THREAD_COUNT=50
+      - APP-SERVICE_CLIENT_REDIRECT-URI=http://app-service:8080/login/oauth2/code/myauth
   
   config-service:
     image: "config-service:1.0"
@@ -43,7 +44,10 @@ services:
       - SPRING_REDIS_HOST=redis
       - SPRING_REDIS_PORT=6379
       - SPRING_CLOUD_CONFIG_URI=http://config-service:9001
-      - SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_MYAUTH_ISSUER-URI=http://auth-service:9000
+      - OAUTH2_SERVICE_ISSUER-URI=http://auth-service:9000
+      - OAUTH2_LOGIN_REDIRECT-URI=http://app-service:8080/login/oauth2/code/myauth
+      - INVOICE_SERVICE_URI=http://invoice-service:8081
+      - PAYMENT_SERVICE_URI=http://payment-service:8082
       - SPRING_PROFILES_ACTIVE=containerenv
           
   invoice-service:
