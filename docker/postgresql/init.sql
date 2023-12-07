@@ -1,2 +1,3 @@
-CREATE DATABASE invoiceService;
-CREATE DATABASE paymentService;
+CREATE DATABASE authservice;
+CREATE DATABASE invoiceservice;
+CREATE DATABASE paymentservice;

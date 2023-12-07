@@ -1,15 +1,21 @@
+#Note - auth-service and app-service if deployed on same machine should NOT be accessed with same host, as browser will overwrite cookies due to same domain name. The trick is use auth-service with host ip (<docker-machine-ip> below) and app-service with host name (<docker-machine-host-name> below) or vice-versa. For browser, these are two different domains and cookies will not conflict.
 version: "3.8"
 services:
   
   auth-service:
+    depends_on:
+      - postgres-db
     image: "auth-service:1.0"
     container_name: "auth-service"
     ports:
       - 9000:9000
     environment:
       - BPL_JVM_THREAD_COUNT=50
-      - APP-SERVICE_CLIENT_REDIRECT-URI=http://app-service:8080/login/oauth2/code/myauth
-  
+      - APP-SERVICE_CLIENT_REDIRECT-URI=http://<docker-machine-host-name>:8080/login/oauth2/code/myauth
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-db:5432/authservice
+      - SPRING_PROFILES_ACTIVE=proddata
+      - LOGGING_LEVEL_ORG_SPRINGFRAMEWORK=debug
+      
   config-service:
     image: "config-service:1.0"
     container_name: "config-service"
@@ -18,11 +24,12 @@ services:
     environment:
       - BPL_JVM_THREAD_COUNT=50  
   
-  redis:
+  my-redis:
     image: "redis:7.0"
     container_name: "redis"
     ports:
       - 6379:6379
+      
   rabbitmq:
     image: rabbitmq:3.10-management
     container_name: rabbitmq
@@ -34,25 +41,30 @@ services:
   
   app-service:
     depends_on:
-      - redis
+      - my-redis
+      - auth-service
     image: "app-service:1.0"
     container_name: "app-service"
     ports:
       - 8080:8080
+      - 5003:5003
     environment:
       - BPL_JVM_THREAD_COUNT=50
-      - SPRING_REDIS_HOST=redis
-      - SPRING_REDIS_PORT=6379
+      - BPL_DEBUG_ENABLED=true
+      - BPL_DEBUG_PORT=5003
+      - SPRING_DATA_REDIS_HOST=my-redis
+      - SPRING_DATA_REDIS_PORT=6379
       - SPRING_CLOUD_CONFIG_URI=http://config-service:9001
-      - OAUTH2_SERVICE_ISSUER-URI=http://auth-service:9000
-      - OAUTH2_LOGIN_REDIRECT-URI=http://app-service:8080/login/oauth2/code/myauth
+      - OAUTH2_SERVICE_ISSUER-URI=http://<docker-machine-ip>:9000
       - INVOICE_SERVICE_URI=http://invoice-service:8081
       - PAYMENT_SERVICE_URI=http://payment-service:8082
-      - SPRING_PROFILES_ACTIVE=containerenv
-          
+      - SPRING_PROFILES_ACTIVE=proddata
+      - LOGGING_LEVEL_ORG_SPRINGFRAMEWORK=debug
+      
   invoice-service:
     depends_on:
       - postgres-db
+      - auth-service
     image: "invoice-service:1.0"
     container_name: "invoice-service"
     ports:
@@ -64,7 +76,9 @@ services:
       - BPL_DEBUG_PORT=5001
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-db:5432/invoiceservice
       - SPRING_CLOUD_CONFIG_URI=http://config-service:9001
+      - OAUTH2_SERVICE_JWT_ISSUER-URI=http://<docker-machine-ip>:9000
       - SPRING_PROFILES_ACTIVE=proddata
+      - LOGGING_LEVEL_ORG_SPRINGFRAMEWORK=debug
   
   payment-service:
     depends_on:
@@ -80,9 +94,10 @@ services:
       - BPL_JVM_THREAD_COUNT=50
       - BPL_DEBUG_ENABLED=true
       - BPL_DEBUG_PORT=5002
-      - SPRING_DATASOURCE_URL=r2dbc:postgresql://postgres-db:5432/paymentService
+      - SPRING_DATASOURCE_URL=r2dbc:postgresql://postgres-db:5432/paymentservice
       - SPRING_CLOUD_CONFIG_URI=http://config-service:9001
       - CONFIG_INVOICE-SERVICE-URI=http://invoice-service:8081
+      - OAUTH2_SERVICE_JWT_ISSUER-URI=http://<docker-machine-ip>:9000
       - RABBITMQ_HOST=rabbitmq
       - SPRING_PROFILES_ACTIVE=proddata
   notification-service:
