@@ -1,4 +1,4 @@
-#Note - auth-service and app-service if deployed on same machine should NOT be accessed with same host, as browser will overwrite cookies due to same domain name. The trick is use auth-service with host ip (<docker-machine-ip> below) and app-service with host name (<docker-machine-host-name> below) or vice-versa. For browser, these are two different domains and cookies will not conflict.
+#Note - auth-service and app-service if deployed on same machine should NOT be accessed with same host, as browser will overwrite cookies due to same domain name. The trick is use auth-service with host ip (13.127.238.95 below) and app-service with host name (<docker-machine-host-name> below) or vice-versa. For browser, these are two different domains and cookies will not conflict.
 version: "3.8"
 services:
   
@@ -31,8 +31,8 @@ services:
       - 6379:6379
       
   rabbitmq:
-    image: rabbitmq:3.10-management
-    container_name: rabbitmq
+    image: "rabbitmq:3.10-management"
+    container_name: "rabbitmq"
     ports:
       - 5672:5672
       - 15672:15672
@@ -52,7 +52,7 @@ services:
       - BPL_JVM_THREAD_COUNT=50
       - BPL_DEBUG_ENABLED=true
       - BPL_DEBUG_PORT=5003
-      - SPRING_DATA_REDIS_HOST=my-redis
+      - SPRING_DATA_REDIS_HOST=redis
       - SPRING_DATA_REDIS_PORT=6379
       - SPRING_CLOUD_CONFIG_URI=http://config-service:9001
       - OAUTH2_SERVICE_ISSUER-URI=http://<docker-machine-ip>:9000
@@ -94,23 +94,26 @@ services:
       - BPL_JVM_THREAD_COUNT=50
       - BPL_DEBUG_ENABLED=true
       - BPL_DEBUG_PORT=5002
-      - SPRING_DATASOURCE_URL=r2dbc:postgresql://postgres-db:5432/paymentservice
+      - SPRING_R2DBC_URL=r2dbc:postgresql://postgres-db:5432/paymentservice
+      - SPRING_FLYWAY_URL=jdbc:postgresql://postgres-db:5432/paymentservice
       - SPRING_CLOUD_CONFIG_URI=http://config-service:9001
       - CONFIG_INVOICE-SERVICE-URI=http://invoice-service:8081
       - OAUTH2_SERVICE_JWT_ISSUER-URI=http://<docker-machine-ip>:9000
-      - RABBITMQ_HOST=rabbitmq
+      - SPRING_RABBITMQ_HOST=rabbitmq
       - SPRING_PROFILES_ACTIVE=proddata
+      - LOGGING_LEVEL_ORG_SPRINGFRAMEWORK=debug
+  
   notification-service:
     depends_on:
       - rabbitmq
     image: "notification-service:1.0"
     container_name: "notification-service"
     ports:
-      - 9000:9000
+      - 8083:8083
     environment:
       - BPL_JVM_THREAD_COUNT=50
       - SPRING_CLOUD_CONFIG_URI=http://config-service:9001
-      - RABBITMQ_HOST=rabbitmq
+      - SPRING_RABBITMQ_HOST=rabbitmq
  
   postgres-db:
     image: "postgres:14.4"
