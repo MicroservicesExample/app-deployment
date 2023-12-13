@@ -11,6 +11,7 @@ services:
       - 9000:9000
     environment:
       - BPL_JVM_THREAD_COUNT=50
+      - SPRING_CLOUD_CONFIG_URI=http://config-service:9001
       - APP-SERVICE_CLIENT_REDIRECT-URI=http://<docker-machine-host-name>:8080/login/oauth2/code/myauth
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-db:5432/authservice
       - SPRING_PROFILES_ACTIVE=proddata
